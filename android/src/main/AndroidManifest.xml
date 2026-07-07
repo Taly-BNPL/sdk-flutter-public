@@ -1,0 +1,15 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+  package="io.taly.sdk_flutter">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <application>
+        <activity
+            android:name="io.taly.sdk.view.PaymentActivity"
+            android:exported="false" />
+
+        <activity
+            android:name="io.taly.sdk.view.CmsWebViewActivity"
+            android:exported="false" />
+
+    </application>
+</manifest>
