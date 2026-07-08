@@ -14,13 +14,12 @@ buildscript {
     }
 }
 
-allprojects {
+val talyLocalRepo = uri("$projectDir/taly-repo")
+rootProject.allprojects {
     repositories {
         google()
         mavenCentral()
-        flatDir {
-            dirs("libs")
-        }
+        maven { url = talyLocalRepo }
     }
 }
 
@@ -80,7 +79,7 @@ android {
 dependencies {
     testImplementation("org.jetbrains.kotlin:kotlin-test")
     testImplementation("org.mockito:mockito-core:5.0.0")
-    implementation(project(":talysdk_aar"))
+    implementation("io.taly:taly-sdk:1.0.0")
 
     // MixPanel library
     implementation("com.mixpanel.android:mixpanel-android:7.+")

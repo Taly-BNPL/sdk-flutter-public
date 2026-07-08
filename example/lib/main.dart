@@ -21,7 +21,7 @@
 //   * iOS:     ios/Podfile -> platform :ios, '13.0'   then `pod install`
 //   * Android: app build.gradle -> minSdk 21+   (INTERNET permission + payment
 //              activities are merged in from the plugin's own manifest)
-//   * Native binaries must ship in the plugin: taly-sdk-release.aar + TalySdk.xcframework
+//   * Native binaries must ship in the plugin: taly-sdk-1.0.0.aar + TalySdk.xcframework
 // =============================================================================
 
 import 'dart:developer';

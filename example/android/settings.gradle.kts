@@ -24,6 +24,3 @@ plugins {
 }
 
 include(":app")
-include(":talysdk_aar")
-project(":talysdk_aar").projectDir =
-    File(rootProject.projectDir, "../../android/talysdk_aar")

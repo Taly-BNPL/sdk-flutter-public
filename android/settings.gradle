@@ -1,4 +1,0 @@
-rootProject.name = 'sdk_flutter'
-
-include ':talysdk_aar'
-project(':talysdk_aar').projectDir = new File(rootProject.projectDir, 'talysdk_aar')
