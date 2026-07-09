@@ -35,7 +35,6 @@ dependencies:
   sdk_flutter:
     git:
       url: https://github.com/Taly-BNPL/sdk-flutter-public.git
-      ref: main
 ```
 
 Then fetch the package:
@@ -59,9 +58,15 @@ If the native framework requires manual embedding, open `ios/Runner.xcworkspace`
 
 ### Android — Additional Setup
 
-No additional steps are required for Android. The Taly Android SDK dependency is resolved automatically through the plugin's `build.gradle`.
+The Taly Android SDK requires `minSdkVersion` 26. In `android/app/build.gradle.kts`, set:
 
-***
+```kotlin
+android {
+    defaultConfig {
+        minSdk = 26
+    }
+}
+```
 
 ## Setup SDK
 

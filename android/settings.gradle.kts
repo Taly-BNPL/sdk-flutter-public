@@ -1,1 +1,1 @@
-rootProject.name = 'sdk_flutter'
+rootProject.name = "sdk_flutter"

@@ -2,9 +2,6 @@ allprojects {
     repositories {
         google()
         mavenCentral()
-        flatDir {
-            dirs("$rootDir/../../android/libs")
-        }
     }
 }
 
