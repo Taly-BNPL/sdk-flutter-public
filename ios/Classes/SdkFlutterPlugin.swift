@@ -1,5 +1,4 @@
 import Flutter
-import TalySdk
 import UIKit
 import TalySdk
 
@@ -154,19 +153,30 @@ public class SdkFlutterPlugin: NSObject, FlutterPlugin {
                     )
                     await MainActor.run {
                         let paymentDelegate = PaymentFlowDelegate(channel: channelRef)
-                        let placeOrderVC = PlaceOrderView(
+                        let placeOrderVC = TrackedPlaceOrderView(
                             orderRequest: orderRequest,
                             tokenRequest: tokenRequest,
                             environment: hostEnv,
                             languageCode: languageCode
                         )
+                        placeOrderVC.activityIndicatorColor = UIColor(
+                            red: 14.0 / 255.0,
+                            green: 133.0 / 255.0,
+                            blue: 255.0 / 255.0,
+                            alpha: 1.0
+                        )
+                        placeOrderVC.onWebViewLoaded = { [weak channelRef] in
+                            DispatchQueue.main.async {
+                                channelRef?.invokeMethod("onPaymentWebViewLoaded", arguments: nil)
+                            }
+                        }
                         placeOrderVC.delegate = paymentDelegate
                         paymentDelegate.beginRetainingLifetime()
                         placeOrderVC.modalPresentationStyle = .fullScreen
                         root.present(placeOrderVC, animated: true) {
                             placeOrderVC.presentationController?.delegate = paymentDelegate
+                            result(nil)
                         }
-                        result(nil)
                     }
                 } catch {
                     await MainActor.run {
@@ -446,6 +456,7 @@ private final class PaymentFlowDelegate: NSObject, PlaceOrderDelegate, UIAdaptiv
     }
 
     func presentationControllerDidDismiss(_ presentationController: UIPresentationController) {
+        channel?.invokeMethod("onPaymentDismissed", arguments: nil)
         endRetainingLifetime()
     }
 
