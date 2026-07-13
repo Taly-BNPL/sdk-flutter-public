@@ -41,8 +41,8 @@ void main() async {
   // credentials with Taly, turns on logging, and opens the native -> Dart
   // channel that later delivers payment results to the STEP 3 callbacks.
   await TalyFlutterSdk.initialize(
-    userName:    'YOUR_USER_NAME',      // your merchant username
-    password:    'YOUR_PASSWORD',      // your merchant PASSWORD
+    userName:    'YOUR_USER_NAME',      // your merchant username 
+    password:    'YOUR_PASSWORD',      // your merchant PASSWORD 
     environment: Environment.development, // sandbox; use Environment.production when live
   );
 
