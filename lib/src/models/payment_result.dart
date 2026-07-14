@@ -1,3 +1,40 @@
+String? _asString(Object? v) => v?.toString();
+
+int? _asInt(Object? v) {
+  if (v == null) return null;
+  if (v is int) return v;
+  if (v is num) return v.toInt();
+  final s = v.toString().trim();
+  if (s.isEmpty) return null;
+  return int.tryParse(s) ?? double.tryParse(s)?.toInt();
+}
+
+double? _asDouble(Object? v) {
+  if (v == null) return null;
+  if (v is num) return v.toDouble();
+  final s = v.toString().trim();
+  if (s.isEmpty) return null;
+  return double.tryParse(s);
+}
+
+bool? _asBool(Object? v) {
+  if (v == null) return null;
+  if (v is bool) return v;
+  if (v is num) return v != 0;
+  final s = v.toString().trim().toLowerCase();
+  if (s == 'true' || s == '1') return true;
+  if (s == 'false' || s == '0') return false;
+  return null;
+}
+
+List<String> _asStringList(Object? v) {
+  if (v is List) {
+    return v.where((e) => e != null).map((e) => e.toString()).toList();
+  }
+  if (v is String && v.isNotEmpty) return [v];
+  return const [];
+}
+
 class PaymentSuccess {
   final String? orderToken;
   final int? branchId;
@@ -50,31 +87,30 @@ class PaymentSuccess {
   factory PaymentSuccess.fromMap(Map<Object?, Object?> map) {
     final pspMap = map['psp'];
     return PaymentSuccess(
-      orderToken: map['orderToken'] as String?,
-      branchId: map['branchId'] as int?,
-      orderDate: map['orderDate'] as String?,
-      status: map['status'] as String?,
-      paymentPlanId: map['paymentPlanId'] as String?,
-      redirectUrl: map['redirectUrl'] as String?,
-      paymentPlanName: map['paymentPlanName'] as String?,
-      branchType: map['branchType'] as String?,
-      branchName: map['branchName'] as String?,
-      settlementType: map['settlementType'] as String?,
-      totalReturnAmount: (map['totalReturnAmount'] as num?)?.toDouble(),
-      totalRefundAmount: (map['totalRefundAmount'] as num?)?.toDouble(),
-      merchantId: map['merchantId'] as int?,
-      merchantName: map['merchantName'] as String?,
-      currency: map['currency'] as String?,
-      talyOrderId: map['talyOrderId'] as int?,
-      merchantOrderId: map['merchantOrderId'] as String?,
-      totalAmount: (map['totalAmount'] as num?)?.toDouble(),
-      settlementStatus: map['settlementStatus'] as String?,
-      postBackUrl: map['postBackUrl'] as String?,
-      merchantLogo: map['merchantLogo'] as String?,
-      psp: pspMap == null
-          ? null
-          : PaymentSuccessPsp.fromMap(
-              Map<Object?, Object?>.from(pspMap as Map)),
+      orderToken: _asString(map['orderToken']),
+      branchId: _asInt(map['branchId']),
+      orderDate: _asString(map['orderDate']),
+      status: _asString(map['status']),
+      paymentPlanId: _asString(map['paymentPlanId']),
+      redirectUrl: _asString(map['redirectUrl']),
+      paymentPlanName: _asString(map['paymentPlanName']),
+      branchType: _asString(map['branchType']),
+      branchName: _asString(map['branchName']),
+      settlementType: _asString(map['settlementType']),
+      totalReturnAmount: _asDouble(map['totalReturnAmount']),
+      totalRefundAmount: _asDouble(map['totalRefundAmount']),
+      merchantId: _asInt(map['merchantId']),
+      merchantName: _asString(map['merchantName']),
+      currency: _asString(map['currency']),
+      talyOrderId: _asInt(map['talyOrderId']),
+      merchantOrderId: _asString(map['merchantOrderId']),
+      totalAmount: _asDouble(map['totalAmount']),
+      settlementStatus: _asString(map['settlementStatus']),
+      postBackUrl: _asString(map['postBackUrl']),
+      merchantLogo: _asString(map['merchantLogo']),
+      psp: pspMap is Map
+          ? PaymentSuccessPsp.fromMap(Map<Object?, Object?>.from(pspMap))
+          : null,
     );
   }
 
@@ -102,6 +138,9 @@ class PaymentSuccess {
       '"merchantLogo":"$merchantLogo",'
       '"PSP":${psp?.toJson() ?? "null"}'
       '}';
+
+  @override
+  String toString() => 'PaymentSuccess(${toJson()})';
 }
 
 class PaymentSuccessPsp {
@@ -119,10 +158,10 @@ class PaymentSuccessPsp {
 
   factory PaymentSuccessPsp.fromMap(Map<Object?, Object?> map) =>
       PaymentSuccessPsp(
-        isPspOrder: map['isPspOrder'] as bool?,
-        pspProvider: map['pspProvider'] as String?,
-        subMerchantName: map['subMerchantName'] as String?,
-        subMerchantId: (map['subMerchantId'] as num?)?.toInt(),
+        isPspOrder: _asBool(map['isPspOrder']),
+        pspProvider: _asString(map['pspProvider']),
+        subMerchantName: _asString(map['subMerchantName']),
+        subMerchantId: _asInt(map['subMerchantId']),
       );
 
   String toJson() => '{'
@@ -149,13 +188,12 @@ class PaymentError {
   });
 
   factory PaymentError.fromMap(Map<Object?, Object?> map) => PaymentError(
-        status: map['status'] as String?,
-        message: map['message'] as String?,
-        errors:
-            (map['errors'] as List?)?.map((e) => e.toString()).toList() ?? [],
-        errorCode: map['errorCode'] as String?,
-        merchantOrderId: map['merchantOrderId'] as String?,
-      );
+    status: _asString(map['status']),
+    message: _asString(map['message']),
+    errors: _asStringList(map['errors']),
+    errorCode: _asString(map['errorCode']),
+    merchantOrderId: _asString(map['merchantOrderId']),
+  );
 
   String toJson() {
     final errList = errors.map((e) => '"$e"').join(',');
