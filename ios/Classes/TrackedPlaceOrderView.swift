@@ -31,8 +31,6 @@ final class TrackedPlaceOrderView: UIViewController {
         blue: 255.0 / 255.0,
         alpha: 1.0
     )
-    private static let webViewTopPadding: CGFloat = 20
-    private static let webViewBottomPadding: CGFloat = 20
     private static let gray100 = UIColor(
         red: 243.0 / 255.0,
         green: 244.0 / 255.0,
@@ -96,14 +94,8 @@ final class TrackedPlaceOrderView: UIViewController {
         placeOrderView.view.backgroundColor = Self.gray100
         view.addSubview(placeOrderView.view)
         NSLayoutConstraint.activate([
-            placeOrderView.view.topAnchor.constraint(
-                equalTo: view.safeAreaLayoutGuide.topAnchor,
-                constant: Self.webViewTopPadding
-            ),
-            placeOrderView.view.bottomAnchor.constraint(
-                equalTo: view.safeAreaLayoutGuide.bottomAnchor,
-                constant: -Self.webViewBottomPadding
-            ),
+            placeOrderView.view.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            placeOrderView.view.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
             placeOrderView.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             placeOrderView.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),
         ])
