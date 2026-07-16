@@ -1,18 +1,3 @@
-//
-//  TalySdk.h
-//  TalySdk
-//
-//  Created by MacPro on 09/08/23.
-//
-
-#import <Foundation/Foundation.h>
-
-//! Project version number for TalySdk.
-FOUNDATION_EXPORT double TalySdkVersionNumber;
-
-//! Project version string for TalySdk.
-FOUNDATION_EXPORT const unsigned char TalySdkVersionString[];
-
-// In this header, you should import all the public headers of your framework using statements like #import <TalySdk/PublicHeader.h>
-
-
+version https://git-lfs.github.com/spec/v1
+oid sha256:1071b4bdb9b41a8ee88f0580c84ee56a26026218044f7f1467ccd916ed97138d
+size 432

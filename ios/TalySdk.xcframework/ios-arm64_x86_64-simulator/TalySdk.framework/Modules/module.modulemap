@@ -1,11 +1,3 @@
-framework module TalySdk {
-  umbrella header "TalySdk.h"
-  export *
-
-  module * { export * }
-}
-
-module TalySdk.Swift {
-  header "TalySdk-Swift.h"
-  requires objc
-}
+version https://git-lfs.github.com/spec/v1
+oid sha256:fa78d3c78721f189331d776e38efb957c27081d4d77dc756557cb1dfacbbbb69
+size 164
