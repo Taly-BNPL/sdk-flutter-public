@@ -18,11 +18,11 @@ The typical integration workflow is:
 ## Requirements
 
 | Requirement           | Minimum Version  |
-| --------------------- | ---------------- |
+| --------------------- |------------------|
 | Flutter               | `>=3.10.0`       |
 | Dart SDK              | `>=3.0.0 <4.0.0` |
 | iOS deployment target | 13.0+            |
-| Android minSdkVersion | 21+              |
+| Android minSdkVersion | 26+              |
 
 ***
 
@@ -35,6 +35,7 @@ dependencies:
   sdk_flutter:
     git:
       url: https://github.com/Taly-BNPL/sdk-flutter-public.git
+      ref: master
 ```
 
 Then fetch the package:
