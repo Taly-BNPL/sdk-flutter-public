@@ -4,6 +4,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:sdk_flutter/src/utils/taly_assets.dart';
 import 'package:sdk_flutter/src/utils/taly_text_styles.dart';
 import 'taly_sdk.dart';
+import 'enums/environment.dart';
 import 'models/installment_model.dart';
 
 const Color _kBannerText = Color(0xFF354250);
@@ -11,6 +12,13 @@ const Color _kBannerMessage = Color(0xFF65717D);
 const Color _kErrorText = Color(0xFF818C98);
 const Color _kInfoTint = Color(0xFF0E85FF);
 const Color _kCardStroke = Color(0xFFE3E8ED);
+
+const String _kInfoUrlDev = 'https://dev-taly.io/how-it-works';
+const String _kInfoUrlProd = 'https://taly.io/how-it-works';
+
+String get _infoUrl => TalyFlutterSdk.environment == Environment.development
+    ? _kInfoUrlDev
+    : _kInfoUrlProd;
 
 class TalyBannerView extends StatefulWidget {
   final String name;
@@ -185,8 +193,7 @@ class _TalyBannerViewState extends State<TalyBannerView> {
           ),
           const SizedBox(width: 4),
           GestureDetector(
-            onTap: () =>
-                widget.onInfoClicked?.call('https://Taly.io/how-it-works'),
+            onTap: () => widget.onInfoClicked?.call(_infoUrl),
             child: Padding(
               padding: EdgeInsets.symmetric(vertical: 2),
               child: SvgPicture.asset(
