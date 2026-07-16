@@ -11,6 +11,10 @@ class TalyFlutterSdk {
   static const _channel = MethodChannel('io.taly.sdk/taly');
   static bool _listenerAttached = false;
 
+  static Environment _environment = Environment.production;
+
+  static Environment get environment => _environment;
+
   static void Function(PaymentSuccess)? onPaymentSuccess;
 
   static void Function(PaymentFailure)? onPaymentFailure;
@@ -37,8 +41,6 @@ class TalyFlutterSdk {
     });
   }
 
-  /// [oauthScope] / [oauthGrantType] are used on **iOS** for [TokenRequest] (Taly docs: `scope: "api"`).
-  /// Android ignores them; the native Android SDK sets OAuth internally.
   static Future<void> initialize({
     required String userName,
     required String password,
@@ -46,6 +48,8 @@ class TalyFlutterSdk {
     String oauthGrantType = 'password',
     String oauthScope = 'api',
   }) async {
+    _environment = environment;
+
     await _channel.invokeMethod<void>('initialize', {
       'userName':    userName,
       'password':    password,
