@@ -13,8 +13,8 @@ const Color _kErrorText = Color(0xFF818C98);
 const Color _kInfoTint = Color(0xFF0E85FF);
 const Color _kCardStroke = Color(0xFFE3E8ED);
 
-const String _kInfoUrlDev = 'https://dev-taly.io/how-it-works';
-const String _kInfoUrlProd = 'https://taly.io/how-it-works';
+const String _kInfoUrlDev = 'https://widget.dev-taly.io/how-it-works';
+const String _kInfoUrlProd = 'https://widget.taly.io/how-it-works';
 
 String get _infoUrl => TalyFlutterSdk.environment == Environment.development
     ? _kInfoUrlDev
