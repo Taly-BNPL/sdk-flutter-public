@@ -1,0 +1,5 @@
+# XCFrameworks and asset catalogs:
+# - Git LFS stores large binaries as pointers (keeps .git lean)
+# - linguist-generated collapses them in GitHub PR diffs
+**/*.xcframework/** filter=lfs diff=lfs merge=lfs -text linguist-generated=true
+**/*.car filter=lfs diff=lfs merge=lfs -text linguist-generated=true
