@@ -13,12 +13,12 @@ const Color _kErrorText = Color(0xFF818C98);
 const Color _kInfoTint = Color(0xFF0E85FF);
 const Color _kCardStroke = Color(0xFFE3E8ED);
 
-const String _kInfoUrlDev = 'https://widget.dev-taly.io/how-it-works';
-const String _kInfoUrlProd = 'https://widget.taly.io/how-it-works';
+const String _kInfoBaseDev = 'https://widget.dev-taly.io/how-it-works';
+const String _kInfoBaseProd = 'https://widget.taly.io/how-it-works';
 
-String get _infoUrl => TalyFlutterSdk.environment == Environment.development
-    ? _kInfoUrlDev
-    : _kInfoUrlProd;
+const String _kErrorMessage =
+    'Taly payment is unavailable right now.\n'
+    'Sorry for the inconvenience. Try again later.';
 
 class TalyBannerView extends StatefulWidget {
   final String name;
@@ -47,7 +47,6 @@ class TalyBannerView extends StatefulWidget {
 class _TalyBannerViewState extends State<TalyBannerView> {
   _BannerState _state = _BannerState.loading;
   InstallmentModel? _firstInstallment;
-  String _errorMessage = 'Something went wrong.\nPlease try again later.';
 
   @override
   void initState() {
@@ -99,11 +98,21 @@ class _TalyBannerViewState extends State<TalyBannerView> {
     } catch (e) {
       log('TalyBannerView fetch error: $e', name: 'TalySDK');
       if (!mounted) return;
-      setState(() {
-        _errorMessage = e.toString();
-        _state = _BannerState.error;
-      });
+      setState(() => _state = _BannerState.error);
     }
+  }
+
+  String _buildInfoUrl() {
+    final base = TalyFlutterSdk.environment == Environment.development
+        ? _kInfoBaseDev
+        : _kInfoBaseProd;
+    final installmentType = 4;
+    return Uri.parse(base).replace(
+      queryParameters: {
+        'price': widget.amount,
+        'installmenttype': '$installmentType',
+      },
+    ).toString();
   }
 
   @override
@@ -193,7 +202,7 @@ class _TalyBannerViewState extends State<TalyBannerView> {
           ),
           const SizedBox(width: 4),
           GestureDetector(
-            onTap: () => widget.onInfoClicked?.call(_infoUrl),
+            onTap: () => widget.onInfoClicked?.call(_buildInfoUrl()),
             child: Padding(
               padding: EdgeInsets.symmetric(vertical: 2),
               child: SvgPicture.asset(
@@ -245,7 +254,7 @@ class _TalyBannerViewState extends State<TalyBannerView> {
           ),
           const SizedBox(height: 16),
           Text(
-            _errorMessage,
+            _kErrorMessage,
             textAlign: TextAlign.center,
             style: TalyTextStyles.medium500(
               fontSize: 14,
