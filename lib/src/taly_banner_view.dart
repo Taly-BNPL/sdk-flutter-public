@@ -13,8 +13,8 @@ const Color _kErrorText = Color(0xFF818C98);
 const Color _kInfoTint = Color(0xFF0E85FF);
 const Color _kCardStroke = Color(0xFFE3E8ED);
 
-const String _kInfoBaseDev = 'https://widget.dev-taly.io/installment-widget';
-const String _kInfoBaseProd = 'https://widget.taly.io/installment-widget';
+const String _kInfoBaseDev = 'https://widget.dev-taly.io/how-it-works';
+const String _kInfoBaseProd = 'https://widget.taly.io/how-it-works';
 
 const String _kPaymentPageDefault = 'cart';
 
