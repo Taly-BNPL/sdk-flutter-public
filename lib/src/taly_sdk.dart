@@ -15,6 +15,10 @@ class TalyFlutterSdk {
 
   static Environment get environment => _environment;
 
+  static String _languageCode = 'en';
+
+  static String get languageCode => _languageCode;
+
   static void Function(PaymentSuccess)? onPaymentSuccess;
 
   static void Function(PaymentFailure)? onPaymentFailure;
@@ -41,6 +45,8 @@ class TalyFlutterSdk {
     });
   }
 
+  /// [oauthScope] / [oauthGrantType] are used on **iOS** for [TokenRequest] (Taly docs: `scope: "api"`).
+  /// Android ignores them; the native Android SDK sets OAuth internally.
   static Future<void> initialize({
     required String userName,
     required String password,
@@ -51,11 +57,11 @@ class TalyFlutterSdk {
     _environment = environment;
 
     await _channel.invokeMethod<void>('initialize', {
-      'userName':    userName,
-      'password':    password,
+      'userName': userName,
+      'password': password,
       'environment': environment.value,
       'oauthGrantType': oauthGrantType,
-      'oauthScope':     oauthScope,
+      'oauthScope': oauthScope,
     });
 
     await setLogLevel(LogLevel.verbose);
@@ -69,16 +75,16 @@ class TalyFlutterSdk {
 
   static Future<List<InstallmentModel>> fetchInstallments({
     required String name,
-    required int    quantity,
+    required int quantity,
     required String amount,
     required String currency,
   }) async {
     final result = await _channel.invokeMethod<List<dynamic>>(
       'fetchInstallments',
       {
-        'name':     name,
+        'name': name,
         'quantity': quantity,
-        'amount':   amount,
+        'amount': amount,
         'currency': currency,
       },
     );
@@ -93,6 +99,7 @@ class TalyFlutterSdk {
   }
 
   static Future<void> setLanguageCode(String code) async {
+    _languageCode = code;
     await _channel.invokeMethod<void>('setLanguageCode', {'code': code});
   }
 

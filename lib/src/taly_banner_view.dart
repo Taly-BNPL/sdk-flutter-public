@@ -13,12 +13,38 @@ const Color _kErrorText = Color(0xFF818C98);
 const Color _kInfoTint = Color(0xFF0E85FF);
 const Color _kCardStroke = Color(0xFFE3E8ED);
 
-const String _kInfoBaseDev = 'https://widget.dev-taly.io/how-it-works';
-const String _kInfoBaseProd = 'https://widget.taly.io/how-it-works';
+const String _kInfoBaseDev = 'https://widget.dev-taly.io/installment-widget';
+const String _kInfoBaseProd = 'https://widget.taly.io/installment-widget';
 
-const String _kErrorMessage =
-    'Taly payment is unavailable right now.\n'
-    'Sorry for the inconvenience. Try again later.';
+const String _kPaymentPageDefault = 'cart';
+
+class _BannerStrings {
+  final String error;
+  final String splitInto4;
+  final String interest;
+
+  const _BannerStrings({
+    required this.error,
+    required this.splitInto4,
+    required this.interest,
+  });
+}
+
+const _BannerStrings _enStrings = _BannerStrings(
+  error:
+      'Taly payment is unavailable right now.\n'
+      'Sorry for the inconvenience. Try again later.',
+  splitInto4: 'Split into 4 payments of',
+  interest: '0% interest, 100% Shariah-compliant.',
+);
+
+const _BannerStrings _arStrings = _BannerStrings(
+  error:
+      'خدمة تالي غير متاحة الآن.\n'
+      'نأسف على الإزعاج، حاول مرة أخرى لاحقًا.',
+  splitInto4: 'قسمها علي ٤ دفعات',
+  interest: '0% فائدة، 100% متوافق مع أحكام الشريعة الإسلامية.',
+);
 
 class TalyBannerView extends StatefulWidget {
   final String name;
@@ -47,6 +73,16 @@ class TalyBannerView extends StatefulWidget {
 class _TalyBannerViewState extends State<TalyBannerView> {
   _BannerState _state = _BannerState.loading;
   InstallmentModel? _firstInstallment;
+
+  bool get _isArabic =>
+      TalyFlutterSdk.languageCode.toLowerCase().startsWith('ar');
+
+  String get _langCode => _isArabic ? 'ar' : 'en';
+
+  TextDirection get _direction =>
+      _isArabic ? TextDirection.rtl : TextDirection.ltr;
+
+  _BannerStrings get _strings => _isArabic ? _arStrings : _enStrings;
 
   @override
   void initState() {
@@ -107,21 +143,27 @@ class _TalyBannerViewState extends State<TalyBannerView> {
         ? _kInfoBaseDev
         : _kInfoBaseProd;
     final installmentType = 4;
-    return Uri.parse(base).replace(
-      queryParameters: {
-        'price': widget.amount,
-        'installmenttype': '$installmentType',
-      },
-    ).toString();
+    return Uri.parse(base)
+        .replace(
+          queryParameters: {
+            'price': widget.amount,
+            'installmenttype': '$installmentType',
+            'lang': _langCode,
+          },
+        )
+        .toString();
   }
 
   @override
   Widget build(BuildContext context) {
-    return switch (_state) {
-      _BannerState.loading => _buildLoader(),
-      _BannerState.banner => _buildBanner(),
-      _BannerState.error => _buildError(),
-    };
+    return Directionality(
+      textDirection: _direction,
+      child: switch (_state) {
+        _BannerState.loading => _buildLoader(),
+        _BannerState.banner => _buildBanner(),
+        _BannerState.error => _buildError(),
+      },
+    );
   }
 
   Widget _buildLoader() {
@@ -133,7 +175,10 @@ class _TalyBannerViewState extends State<TalyBannerView> {
         border: Border.all(color: _kCardStroke),
         boxShadow: const [
           BoxShadow(
-              color: Color(0x0D000000), blurRadius: 2, offset: Offset(0, 1)),
+            color: Color(0x0D000000),
+            blurRadius: 2,
+            offset: Offset(0, 1),
+          ),
         ],
       ),
       padding: const EdgeInsets.all(16),
@@ -152,7 +197,7 @@ class _TalyBannerViewState extends State<TalyBannerView> {
 
   Widget _buildBanner() {
     final inst = _firstInstallment!;
-    final message = 'Split into 4 payments of ${inst.currency} ${inst.amount}';
+    final message = '${_strings.splitInto4} ${inst.currency} ${inst.amount}';
 
     return Container(
       margin: const EdgeInsets.all(2),
@@ -162,7 +207,10 @@ class _TalyBannerViewState extends State<TalyBannerView> {
         border: Border.all(color: const Color(0xFFE3E8ED)),
         boxShadow: const [
           BoxShadow(
-              color: Color(0x0D000000), blurRadius: 2, offset: Offset(0, 1)),
+            color: Color(0x0D000000),
+            blurRadius: 2,
+            offset: Offset(0, 1),
+          ),
         ],
       ),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -188,7 +236,7 @@ class _TalyBannerViewState extends State<TalyBannerView> {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  '0% interest, 100% Shariah-compliant.',
+                  _strings.interest,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: TalyTextStyles.medium500(
@@ -228,7 +276,10 @@ class _TalyBannerViewState extends State<TalyBannerView> {
         border: Border.all(color: const Color(0xFFE3E8ED)),
         boxShadow: const [
           BoxShadow(
-              color: Color(0x0A000000), blurRadius: 1, offset: Offset(0, 1)),
+            color: Color(0x0A000000),
+            blurRadius: 1,
+            offset: Offset(0, 1),
+          ),
         ],
       ),
       padding: const EdgeInsets.all(20),
@@ -254,7 +305,7 @@ class _TalyBannerViewState extends State<TalyBannerView> {
           ),
           const SizedBox(height: 16),
           Text(
-            _kErrorMessage,
+            _strings.error,
             textAlign: TextAlign.center,
             style: TalyTextStyles.medium500(
               fontSize: 14,
