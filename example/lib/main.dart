@@ -41,14 +41,15 @@ void main() async {
   // credentials with Taly, turns on logging, and opens the native -> Dart
   // channel that later delivers payment results to the STEP 3 callbacks.
   await TalyFlutterSdk.initialize(
-    userName:    'YOUR_USER_NAME',      // your merchant username
-    password:    'YOUR_PASSWORD',      // your merchant PASSWORD
-    environment: Environment.development, // sandbox; use Environment.production when live
+    userName: 'YOUR_USER_NAME', // your merchant username
+    password: 'YOUR_PASSWORD', // your merchant PASSWORD
+    environment: Environment
+        .development, // sandbox; use Environment.production when live
   );
 
   // == SDK STEP 2 · Optional configuration ====================================
   await TalyFlutterSdk.setLogLevel(LogLevel.verbose); // SDK log verbosity
-  await TalyFlutterSdk.setLanguageCode('en');         // 'en' or 'ar'
+  await TalyFlutterSdk.setLanguageCode('en'); // 'en' or 'ar'
 
   runApp(const MyApp());
 }
@@ -78,15 +79,14 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
-
-  final _amountController  = TextEditingController();
+  final _amountController = TextEditingController();
   final _orderIdController = TextEditingController();
 
-  String  _amount       = '';
-  final String  _orderId      = '';
-  bool    _radioChecked = false;
-  bool    _bannerVisible = false;
-  String _bannerAmount  = '';
+  String _amount = '';
+  final String _orderId = '';
+  bool _radioChecked = false;
+  bool _bannerVisible = false;
+  String _bannerAmount = '';
 
   String? _amountError;
 
@@ -155,8 +155,8 @@ class _MainScreenState extends State<MainScreen> {
     }
 
     setState(() {
-      _amountError  = null;
-      _amount       = raw;
+      _amountError = null;
+      _amount = raw;
       _radioChecked = true;
     });
 
@@ -167,7 +167,7 @@ class _MainScreenState extends State<MainScreen> {
   // fetch the installment plan for this amount — no extra wiring needed.
   void _setupSDK(String amount) {
     setState(() {
-      _bannerAmount  = amount;
+      _bannerAmount = amount;
       _bannerVisible = true;
     });
   }
@@ -192,70 +192,98 @@ class _MainScreenState extends State<MainScreen> {
 
     await TalyFlutterSdk.initiatePayment(
       InitiatePaymentModel(
-        merchantOrderId:     merchantOrderId,          // REQUIRED · your unique order id
-        language:            'en',                     // optional · per-order language override
-        merchantBranch:      'salmiya',                // optional · originating store/branch
-        subTotal:             double.parse(_amount),   // REQUIRED · items total before fees
-        totalAmount:          double.parse(_amount),   // REQUIRED · final amount charged
-        currency:             'KWD',                   // REQUIRED · ISO currency code
-        discountAmount:       0.0,                     // optional · defaults to 0
-        taxAmount:            0.0,                      // optional · defaults to 0
-        deliveryAmount:       0.0,                      // optional · defaults to 0
-        deliveryMethod:       'home delivery',          // REQUIRED
-        otherFees:            0.0,                       // optional · defaults to 0
+        merchantOrderId: merchantOrderId,
+        // REQUIRED · your unique order id
+        language: 'en',
+        // optional · per-order language override
+        merchantBranch: 'salmiya',
+        // optional · originating store/branch
+        subTotal: double.parse(_amount),
+        // REQUIRED · items total before fees
+        totalAmount: double.parse(_amount),
+        // REQUIRED · final amount charged
+        currency: 'KWD',
+        // REQUIRED · ISO currency code
+        discountAmount: 0.0,
+        // optional · defaults to 0
+        taxAmount: 0.0,
+        // optional · defaults to 0
+        deliveryAmount: 0.0,
+        // optional · defaults to 0
+        deliveryMethod: 'home delivery',
+        // REQUIRED
+        otherFees: 0.0,
+        // optional · defaults to 0
         // REQUIRED · URL the checkout returns to when finished:
-        merchantRedirectUrl:  'https://yourmerchant.com/checkout/',
+        merchantRedirectUrl: 'https://yourmerchant.com/checkout/',
         // optional · server-to-server webhook Taly calls to confirm the order:
-        postBackUrl:          'https://yourmerchant.com/yourWebhookEndpoint/',
+        postBackUrl: 'https://yourmerchant.com/yourWebhookEndpoint/',
         // optional · logo shown on the checkout screen:
-        merchantLogo:         'https://www.yourmerchant.com/media/merchantLogo.png',
+        merchantLogo: 'https://www.yourmerchant.com/media/merchantLogo.png',
         // optional block · include ONLY if you route through a payment service
         // provider; omit the whole `psp:` argument otherwise:
         psp: const PSP(
-          isPspOrder:      true,
-          pspProvider:     'Tap',
-          subMerchantId:   1234,
+          isPspOrder: true,
+          pspProvider: 'Tap',
+          subMerchantId: 1234,
           subMerchantName: 'Test',
         ),
-        orderItems: [                                  // REQUIRED · at least one item
+        orderItems: [
+          // REQUIRED · at least one item
           OrderItem(
-            sku:                   '23433312436',      // REQUIRED · product SKU
-            type:                  'physical',         // optional · e.g. physical / digital
-            name:                  'blue shirt 998',   // REQUIRED · English name
-            nameArabic:            'القميص الأزرق 998', // REQUIRED · Arabic name
-            currency:              'KWD',              // REQUIRED
-            itemDescription:       't-shirt made of cotton',        // optional
-            itemDescriptionArabic: 'تي شيرت مصنوع من القطن',        // optional
-            quantity:               1,                 // REQUIRED
-            itemPrice:              double.parse(_amount), // REQUIRED · price per unit
-            imageUrl:              'https://www.merchantwebsite.com/item1image.jpg', // optional
-            itemUrl:               'https://www.merchantwebsite.com/item1.html',     // optional
-            itemUnit:              'gm',               // optional
-            itemSize:              '32',               // optional
-            itemColor:             'blue',             // optional
-            itemGender:            'men',              // optional
-            itemBrand:             'Adidas',           // optional
-            itemCategory:          'Men>Men\'s Wear>Running', // optional
+            sku: '23433312436',
+            // REQUIRED · product SKU
+            type: 'physical',
+            // optional · e.g. physical / digital
+            name: 'blue shirt 998',
+            // REQUIRED · English name
+            nameArabic: 'القميص الأزرق 998',
+            // REQUIRED · Arabic name
+            currency: 'KWD',
+            // REQUIRED
+            itemDescription: 't-shirt made of cotton',
+            // optional
+            itemDescriptionArabic: 'تي شيرت مصنوع من القطن',
+            // optional
+            quantity: 1,
+            // REQUIRED
+            itemPrice: double.parse(_amount),
+            // REQUIRED · price per unit
+            imageUrl: 'https://www.merchantwebsite.com/item1image.jpg',
+            // optional
+            itemUrl: 'https://www.merchantwebsite.com/item1.html',
+            // optional
+            itemUnit: 'gm',
+            // optional
+            itemSize: '32',
+            // optional
+            itemColor: 'blue',
+            // optional
+            itemGender: 'men',
+            // optional
+            itemBrand: 'Adidas',
+            // optional
+            itemCategory: 'Men>Men\'s Wear>Running', // optional
           ),
         ],
         // optional block · buyer info; improves approval + prefills checkout:
         customerDetails: const CustomerDetails(
-          firstName:       'Ahmad',
-          lastName:        'Ali',
-          gender:          'Male',
-          countryCode:     '+965',
-          phoneNumber:     '55555333',
-          customerEmail:   'user@example.com',
+          firstName: 'Ahmad',
+          lastName: 'Ali',
+          gender: 'Male',
+          countryCode: '+965',
+          phoneNumber: '55555333',
+          customerEmail: 'user@example.com',
           registeredSince: '2022-10-26',
-          loyaltyMember:   true,
-          loyaltyLevel:    'VIP',
+          loyaltyMember: true,
+          loyaltyLevel: 'VIP',
         ),
         // optional block · where the order ships:
         deliveryAddress: const DeliveryAddress(
-          city:          'Hawalli',
-          area:          'Salmiya',
-          fullAddress:   'Hawalli, Salmiya, block 5, building 5, floor 2, flat 6',
-          phoneNumber:   '502223333',
+          city: 'Hawalli',
+          area: 'Salmiya',
+          fullAddress: 'Hawalli, Salmiya, block 5, building 5, floor 2, flat 6',
+          phoneNumber: '502223333',
           customerEmail: 'user@example.com',
         ),
       ),
@@ -279,23 +307,38 @@ class _MainScreenState extends State<MainScreen> {
 
     await TalyFlutterSdk.initiatePayment(
       InitiatePaymentModel(
-        merchantOrderId:    merchantOrderId,           // REQUIRED
-        subTotal:            double.parse(_amount),     // REQUIRED
-        totalAmount:         double.parse(_amount),     // REQUIRED
-        currency:            'KWD',                     // REQUIRED
-        discountAmount:      0.0,                        // optional
-        taxAmount:           0.0,                        // optional
-        deliveryAmount:      0.0,                        // optional
-        deliveryMethod:      'home delivery',            // REQUIRED
-        merchantRedirectUrl: 'https://yourmerchant.com/checkout/', // REQUIRED
-        orderItems: [                                   // REQUIRED
+        merchantOrderId: merchantOrderId,
+        // REQUIRED
+        subTotal: double.parse(_amount),
+        // REQUIRED
+        totalAmount: double.parse(_amount),
+        // REQUIRED
+        currency: 'KWD',
+        // REQUIRED
+        discountAmount: 0.0,
+        // optional
+        taxAmount: 0.0,
+        // optional
+        deliveryAmount: 0.0,
+        // optional
+        deliveryMethod: 'home delivery',
+        // REQUIRED
+        merchantRedirectUrl: 'https://yourmerchant.com/checkout/',
+        // REQUIRED
+        orderItems: [
+          // REQUIRED
           OrderItem(
-            sku:        '23433312436',                 // REQUIRED
-            name:       'blue shirt 998',              // REQUIRED
-            nameArabic: 'القميص الأزرق 998',           // REQUIRED
-            currency:   'KWD',                         // REQUIRED
-            quantity:    1,                            // REQUIRED
-            itemPrice:   double.parse(_amount),        // REQUIRED · price per unit
+            sku: '23433312436',
+            // REQUIRED
+            name: 'blue shirt 998',
+            // REQUIRED
+            nameArabic: 'القميص الأزرق 998',
+            // REQUIRED
+            currency: 'KWD',
+            // REQUIRED
+            quantity: 1,
+            // REQUIRED
+            itemPrice: double.parse(_amount), // REQUIRED · price per unit
           ),
         ],
       ),
@@ -304,16 +347,16 @@ class _MainScreenState extends State<MainScreen> {
 
   void _clearAll() {
     setState(() {
-      _radioChecked  = false;
-      _amount        = '';
+      _radioChecked = false;
+      _amount = '';
       _bannerVisible = false;
-      _bannerAmount  = '';
+      _bannerAmount = '';
     });
   }
 
   String _formatString(String text) {
-    final json        = StringBuffer();
-    String indent     = '';
+    final json = StringBuffer();
+    String indent = '';
 
     for (final ch in text.characters) {
       switch (ch) {
@@ -347,10 +390,7 @@ class _MainScreenState extends State<MainScreen> {
         content: SingleChildScrollView(
           child: Text(
             _formatString(message),
-            style: const TextStyle(
-              fontFamily: 'monospace',
-              fontSize:   13,
-            ),
+            style: const TextStyle(fontFamily: 'monospace', fontSize: 13),
           ),
         ),
         actions: [
@@ -380,26 +420,27 @@ class _MainScreenState extends State<MainScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-
               TextField(
-                controller:  _amountController,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                controller: _amountController,
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
                 decoration: InputDecoration(
-                  labelText:   'Amount',
-                  hintText:    'Enter amount',
-                  errorText:   _amountError,
-                  prefixText:  'KWD ',
+                  labelText: 'Amount',
+                  hintText: 'Enter amount',
+                  errorText: _amountError,
+                  prefixText: 'KWD ',
                   border: const OutlineInputBorder(),
                 ),
               ),
               const SizedBox(height: 12),
 
               TextField(
-                controller:  _orderIdController,
+                controller: _orderIdController,
                 decoration: const InputDecoration(
                   labelText: 'Order ID (optional)',
-                  hintText:  'Leave empty to auto-generate',
-                  border:    OutlineInputBorder(),
+                  hintText: 'Leave empty to auto-generate',
+                  border: OutlineInputBorder(),
                 ),
               ),
               const SizedBox(height: 16),
@@ -408,7 +449,10 @@ class _MainScreenState extends State<MainScreen> {
                 onTap: _validate,
                 borderRadius: BorderRadius.circular(8),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
                   decoration: BoxDecoration(
                     border: Border.all(
                       color: _radioChecked
@@ -424,10 +468,10 @@ class _MainScreenState extends State<MainScreen> {
                   child: Row(
                     children: [
                       Radio<bool>(
-                        value:         true,
-                        groupValue:    _radioChecked,
-                        onChanged:     (_) => _validate(),
-                        activeColor:   const Color(0xFF1565C0),
+                        value: true,
+                        groupValue: _radioChecked,
+                        onChanged: (_) => _validate(),
+                        activeColor: const Color(0xFF1565C0),
                       ),
                       const SizedBox(width: 8),
                       const Text(
@@ -440,7 +484,7 @@ class _MainScreenState extends State<MainScreen> {
                       const Spacer(),
                       Image.network(
                         'https://taly.io/favicon.ico',
-                        width:  32,
+                        width: 32,
                         height: 32,
                         errorBuilder: (_, _, _) => const Icon(
                           Icons.account_balance_wallet,
@@ -460,13 +504,13 @@ class _MainScreenState extends State<MainScreen> {
               // "how it works" sheet when the info icon is tapped.
               if (_bannerVisible && _bannerAmount.isNotEmpty)
                 TalyBannerView(
-                  amount:   _bannerAmount,
+                  amount: _bannerAmount,
                   currency: 'KWD',
                   onInfoClicked: (url) {
                     showDialog(
                       context: context,
                       builder: (_) => AlertDialog(
-                        title:   const Text('How it works'),
+                        title: const Text('How it works'),
                         content: Text(url),
                         actions: [
                           TextButton(
@@ -485,7 +529,7 @@ class _MainScreenState extends State<MainScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF1565C0),
                   foregroundColor: Colors.white,
-                  padding:         const EdgeInsets.symmetric(vertical: 16),
+                  padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
@@ -502,8 +546,8 @@ class _MainScreenState extends State<MainScreen> {
                 onPressed: _initiatePaymentRequiredOnly,
                 style: OutlinedButton.styleFrom(
                   foregroundColor: const Color(0xFF1565C0),
-                  side:            const BorderSide(color: Color(0xFF1565C0)),
-                  padding:         const EdgeInsets.symmetric(vertical: 16),
+                  side: const BorderSide(color: Color(0xFF1565C0)),
+                  padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
