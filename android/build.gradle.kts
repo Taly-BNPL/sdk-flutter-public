@@ -79,7 +79,7 @@ android {
 dependencies {
     testImplementation("org.jetbrains.kotlin:kotlin-test")
     testImplementation("org.mockito:mockito-core:5.0.0")
-    implementation("io.taly:taly-sdk:1.0.2")
+    implementation("io.taly:taly-sdk:1.0.3")
 
     // MixPanel library
     implementation("com.mixpanel.android:mixpanel-android:7.+")
