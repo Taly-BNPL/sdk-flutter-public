@@ -44,6 +44,8 @@ Then fetch the package:
 flutter pub get
 ```
 
+> **Warning — do not install from pub.dev.** The Taly SDK is **not** published on pub.dev. The package named `sdk_flutter` on pub.dev belongs to an unrelated third party. Do **not** run `flutter pub add sdk_flutter` or declare `sdk_flutter: ^x.y.z` without the `git:` source above — that would install a foreign package into your payment flow. Always use the `git:` dependency pointing at `https://github.com/Taly-BNPL/sdk-flutter-public.git`.
+
 ### iOS — Additional Setup
 
 The Taly Flutter SDK wraps the native Taly iOS SDK (`.xcframework`). After running `flutter pub get`, navigate to the `ios` directory and install the CocoaPods dependencies:
