@@ -1,0 +1,136 @@
+name: Dependency scan
+
+# PR check: fails the PR when it ADDS a critical-severity vulnerable dependency.
+# It scans the PR head and the base branch with OSV-Scanner and compares the two, so
+# vulnerabilities that already exist on the base branch never block a PR; only new ones do.
+# Existing criticals are listed in the job summary for information.
+#
+# Standalone copy of Taly-BNPL/ci-workflows dependency-scan.yml: public repos can't call
+# workflows in the private ci-workflows repo. Keep the two in sync.
+#
+# Severity: a finding counts as critical when the advisory's own severity is CRITICAL
+# (GitHub advisories) or its highest CVSS score is 9.0 or more.
+
+on:
+  pull_request:
+
+permissions: {}
+
+env:
+  OSV_SCANNER_VERSION: v2.7.0
+  # sha256 of osv-scanner_linux_amd64 from the release's osv-scanner_SHA256SUMS
+  OSV_SCANNER_SHA256: 160c6253e2922e9e0a6a9771c5c4c40a4b3c6090b34a3cdd5e80c96cc2e4218b
+
+jobs:
+  scan:
+    name: New vulnerable dependencies
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Install OSV-Scanner
+        run: |
+          mkdir -p "$RUNNER_TEMP/bin"
+          curl -fsSL -o "$RUNNER_TEMP/bin/osv-scanner" \
+            "https://github.com/google/osv-scanner/releases/download/${OSV_SCANNER_VERSION}/osv-scanner_linux_amd64"
+          echo "${OSV_SCANNER_SHA256}  $RUNNER_TEMP/bin/osv-scanner" | sha256sum -c -
+          chmod +x "$RUNNER_TEMP/bin/osv-scanner"
+          echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
+
+      - name: Scan PR head
+        run: |
+          # Exit code 1 means vulnerabilities were found, 128 means no manifests; both are fine here.
+          osv-scanner scan source -r --format json --output "$RUNNER_TEMP/head.json" . || rc=$?
+          echo "osv-scanner exit code: ${rc:-0}"
+          if [ "${rc:-0}" -gt 1 ] && [ "${rc:-0}" -ne 128 ]; then exit "$rc"; fi
+
+      - name: Scan base branch
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          git worktree add --detach "$RUNNER_TEMP/base" "$BASE_SHA"
+          cd "$RUNNER_TEMP/base"
+          osv-scanner scan source -r --format json --output "$RUNNER_TEMP/base.json" . || rc=$?
+          echo "osv-scanner exit code: ${rc:-0}"
+          if [ "${rc:-0}" -gt 1 ] && [ "${rc:-0}" -ne 128 ]; then exit "$rc"; fi
+
+      - name: Compare
+        env:
+          FAIL_ON: critical
+        run: |
+          python3 - <<'PY'
+          import json, os
+
+          tmp = os.environ["RUNNER_TEMP"]
+          fail_on = os.environ.get("FAIL_ON", "critical").lower()
+          floor = {"critical": 9.0, "high": 7.0}.get(fail_on, 9.0)
+          labels = {"critical": {"CRITICAL"}, "high": {"CRITICAL", "HIGH"}}.get(fail_on, {"CRITICAL"})
+
+          def load(name):
+              path = os.path.join(tmp, name)
+              if not os.path.exists(path):
+                  return {}
+              with open(path) as f:
+                  data = json.load(f)
+              found = {}
+              for result in data.get("results") or []:
+                  source = (result.get("source") or {}).get("path", "")
+                  for root in (os.path.join(tmp, "base"), os.getcwd()):
+                      if source.startswith(root + "/"):
+                          source = source[len(root) + 1:]
+                          break
+                  for pkg in result.get("packages") or []:
+                      p = pkg.get("package") or {}
+                      vulns = {v["id"]: v for v in pkg.get("vulnerabilities") or []}
+                      for group in pkg.get("groups") or []:
+                          ids = group.get("ids") or []
+                          try:
+                              score = float(group.get("max_severity") or 0)
+                          except ValueError:
+                              score = 0.0
+                          label = {
+                              ((vulns.get(i) or {}).get("database_specific") or {}).get("severity", "").upper()
+                              for i in ids
+                          }
+                          if score >= floor or label & labels:
+                              key = (p.get("ecosystem", ""), p.get("name", ""), min(ids))
+                              found[key] = {
+                                  "ids": ", ".join(sorted(ids)[:3]),
+                                  "version": p.get("version", ""),
+                                  "score": score,
+                                  "file": source,
+                              }
+              return found
+
+          head = load("head.json")
+          base = load("base.json")
+          new = {k: v for k, v in head.items() if k not in base}
+          existing = {k: v for k, v in head.items() if k in base}
+
+          lines = [f"## Dependency scan ({fail_on} and above)", ""]
+          def table(title, items):
+              lines.append(f"### {title}: {len(items)}")
+              if items:
+                  lines.append("")
+                  lines.append("| Package | Version | Advisory | CVSS | File |")
+                  lines.append("|---|---|---|---|---|")
+                  for (eco, name, _), v in sorted(items.items()):
+                      lines.append(f"| {eco} {name} | {v['version']} | {v['ids']} | {v['score'] or '-'} | {v['file']} |")
+              lines.append("")
+          table("Introduced by this PR", new)
+          table("Already on the base branch (not blocking)", existing)
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as f:
+              f.write("\n".join(lines) + "\n")
+          print("\n".join(lines))
+          if new:
+              print(f"::error::This PR adds {len(new)} {fail_on}-severity vulnerable dependenc{'y' if len(new) == 1 else 'ies'}. Upgrade to a fixed version before merging.")
+              raise SystemExit(1)
+          PY

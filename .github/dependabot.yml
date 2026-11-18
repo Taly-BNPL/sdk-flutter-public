@@ -1,0 +1,31 @@
+# Managed by DevOps. Dependabot security updates only.
+# Version updates are off (open-pull-requests-limit: 0); every security fix for an
+# ecosystem is grouped into a single PR so the team gets one PR to review, not dozens.
+version: 2
+updates:
+  - package-ecosystem: "gradle"
+    directory: "/android"
+    schedule:
+      interval: "weekly"
+      day: "sunday"
+      time: "06:00"
+      timezone: "Asia/Kuwait"
+    open-pull-requests-limit: 0
+    groups:
+      gradle-security:
+        applies-to: "security-updates"
+        patterns:
+          - "*"
+  - package-ecosystem: "pub"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "sunday"
+      time: "06:00"
+      timezone: "Asia/Kuwait"
+    open-pull-requests-limit: 0
+    groups:
+      pub-security:
+        applies-to: "security-updates"
+        patterns:
+          - "*"
