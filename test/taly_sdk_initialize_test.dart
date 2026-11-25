@@ -43,6 +43,19 @@ void main() {
     expect(args['environment'], Environment.development.value);
   });
 
+  test('does not change the log level (the integrator decides)', () async {
+    await TalyFlutterSdk.initialize(userName: 'user', password: 'pass');
+
+    expect(calls.where((c) => c.method == 'setLogLevel'), isEmpty);
+  });
+
+  test('setLogLevel still sends the chosen level', () async {
+    await TalyFlutterSdk.setLogLevel(LogLevel.none);
+
+    expect(calls.single.method, 'setLogLevel');
+    expect(calls.single.arguments, {'level': 'none'});
+  });
+
   test('existing calls without client credentials are unchanged (backward compatible)', () async {
     await TalyFlutterSdk.initialize(userName: 'user', password: 'pass');
 

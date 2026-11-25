@@ -79,6 +79,11 @@ This plugin bundles the **Taly Android SDK v1.3**, packaged in the plugin as `io
 
 These changes apply to Android only; iOS behaviour is unchanged.
 
+Changes on both Android and iOS in this version:
+
+* `initialize()` no longer sets the log level to verbose. Call [`setLogLevel()`](#setloglevel) yourself if you want SDK logs.
+* `toJson()` on `PaymentSuccess` / `PaymentFailure` and `PaymentError` now returns valid, escaped JSON with the same keys. A missing text value is now `null` instead of the text `"null"`.
+
 ## Setup SDK
 
 ### Import the Package
@@ -437,7 +442,7 @@ await TalyFlutterSdk.setLanguageCode('ar');
 
 ##### `setLogLevel()`
 
-Controls the verbosity of SDK log output. Called automatically with `LogLevel.verbose` after `initialize()`.
+Controls the verbosity of SDK log output. `initialize()` does not change it, so set it yourself (for example `kDebugMode ? LogLevel.verbose : LogLevel.none`). If you never call it, the Android SDK logs at debug level, and nothing at all with `Environment.production`. iOS currently ignores the log level.
 
 ```dart
 static Future<void> setLogLevel(LogLevel level)
@@ -640,7 +645,7 @@ Returned via `onPaymentSuccess` when a payment completes successfully.
 
 ##### `toJson()` → `String`
 
-Serializes the result to a JSON string for logging or server forwarding.
+Serializes the result to a valid JSON string, for example to forward to your server. Every value is escaped, and a missing value is `null`. `toMap()` returns the same fields as a `Map`. Don't write the full result to logs: it contains the order token and payment details.
 
 ***
 
@@ -670,7 +675,7 @@ Returned via `onPaymentError` when an SDK or network error prevents the payment 
 
 ##### `toJson()` → `String`
 
-Serializes the error to a JSON string.
+Serializes the error to a valid JSON string (every value escaped, a missing value is `null`). `toMap()` returns the same fields as a `Map`.
 
 ***
 
@@ -718,10 +723,10 @@ Controls the verbosity of SDK log output.
 
 | Value              | Description                                                                   |
 | ------------------ | ----------------------------------------------------------------------------- |
-| `LogLevel.verbose` | All messages, including detailed trace output. (Default after `initialize()`) |
+| `LogLevel.verbose` | All messages, including detailed trace output.                                |
 | `LogLevel.debug`   | Debug messages and above.                                                     |
 | `LogLevel.info`    | Informational messages and above.                                             |
-| `LogLevel.warning` | Warnings and above.                                                           |
+| `LogLevel.warning` | Warnings and above. On Android this shows errors (no separate warning level). |
 | `LogLevel.error`   | Errors only. Recommended for production builds.                               |
 | `LogLevel.none`    | No log output.                                                                |
 
@@ -844,6 +849,8 @@ try {
      kReleaseMode ? LogLevel.error : LogLevel.verbose,
    );
    ```
+
+   Don't log the full payment result either. Log only `talyOrderId` and `status`, and only in debug builds.
 
 5. **Assign callbacks before navigating to checkout.** Set `onPaymentSuccess`, `onPaymentFailure`, and `onPaymentError` before calling `initiatePayment()` to guarantee you never miss a result.
 

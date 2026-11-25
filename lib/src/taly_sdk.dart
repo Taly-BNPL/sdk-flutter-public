@@ -72,7 +72,7 @@ class TalyFlutterSdk {
       if (clientSecret != null) 'clientSecret': clientSecret,
     });
 
-    await setLogLevel(LogLevel.verbose);
+    // The log level is the integrator's choice (see [setLogLevel]); initialize does not change it.
 
     _attachListener();
   }

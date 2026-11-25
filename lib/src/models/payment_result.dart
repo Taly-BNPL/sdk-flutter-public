@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 String? _asString(Object? v) => v?.toString();
 
 int? _asInt(Object? v) {
@@ -16,6 +18,9 @@ double? _asDouble(Object? v) {
   if (s.isEmpty) return null;
   return double.tryParse(s);
 }
+
+/// JSON has no NaN or Infinity (`jsonEncode` would throw), so those become null.
+double? _finiteOrNull(double? v) => (v != null && v.isFinite) ? v : null;
 
 bool? _asBool(Object? v) {
   if (v == null) return null;
@@ -114,30 +119,34 @@ class PaymentSuccess {
     );
   }
 
-  String toJson() => '{'
-      '"orderToken":"$orderToken",'
-      '"branchId":$branchId,'
-      '"orderDate":"$orderDate",'
-      '"status":"$status",'
-      '"paymentPlanId":"$paymentPlanId",'
-      '"redirectUrl":"$redirectUrl",'
-      '"paymentPlanName":"$paymentPlanName",'
-      '"branchType":"$branchType",'
-      '"branchName":"$branchName",'
-      '"settlementType":"$settlementType",'
-      '"totalReturnAmount":$totalReturnAmount,'
-      '"totalRefundAmount":$totalRefundAmount,'
-      '"merchantId":$merchantId,'
-      '"merchantName":"$merchantName",'
-      '"currency":"$currency",'
-      '"talyOrderId":$talyOrderId,'
-      '"merchantOrderId":"$merchantOrderId",'
-      '"totalAmount":$totalAmount,'
-      '"settlementStatus":"$settlementStatus",'
-      '"postBackUrl":"$postBackUrl",'
-      '"merchantLogo":"$merchantLogo",'
-      '"PSP":${psp?.toJson() ?? "null"}'
-      '}';
+  /// The fields under the same keys as [toJson] (the nested PSP key stays `PSP`).
+  Map<String, Object?> toMap() => {
+        'orderToken': orderToken,
+        'branchId': branchId,
+        'orderDate': orderDate,
+        'status': status,
+        'paymentPlanId': paymentPlanId,
+        'redirectUrl': redirectUrl,
+        'paymentPlanName': paymentPlanName,
+        'branchType': branchType,
+        'branchName': branchName,
+        'settlementType': settlementType,
+        'totalReturnAmount': _finiteOrNull(totalReturnAmount),
+        'totalRefundAmount': _finiteOrNull(totalRefundAmount),
+        'merchantId': merchantId,
+        'merchantName': merchantName,
+        'currency': currency,
+        'talyOrderId': talyOrderId,
+        'merchantOrderId': merchantOrderId,
+        'totalAmount': _finiteOrNull(totalAmount),
+        'settlementStatus': settlementStatus,
+        'postBackUrl': postBackUrl,
+        'merchantLogo': merchantLogo,
+        'PSP': psp?.toMap(),
+      };
+
+  /// Valid JSON: every value is escaped by `jsonEncode`; a missing value is `null`.
+  String toJson() => jsonEncode(toMap());
 
   @override
   String toString() => 'PaymentSuccess(${toJson()})';
@@ -164,12 +173,14 @@ class PaymentSuccessPsp {
         subMerchantId: _asInt(map['subMerchantId']),
       );
 
-  String toJson() => '{'
-      '"isPspOrder":$isPspOrder,'
-      '"pspProvider":"$pspProvider",'
-      '"subMerchantName":"$subMerchantName",'
-      '"subMerchantId":$subMerchantId'
-      '}';
+  Map<String, Object?> toMap() => {
+        'isPspOrder': isPspOrder,
+        'pspProvider': pspProvider,
+        'subMerchantName': subMerchantName,
+        'subMerchantId': subMerchantId,
+      };
+
+  String toJson() => jsonEncode(toMap());
 }
 
 class PaymentError {
@@ -195,16 +206,16 @@ class PaymentError {
     merchantOrderId: _asString(map['merchantOrderId']),
   );
 
-  String toJson() {
-    final errList = errors.map((e) => '"$e"').join(',');
-    return '{'
-        '"status":"$status",'
-        '"message":"$message",'
-        '"errors":[$errList],'
-        '"errorCode":"$errorCode",'
-        '"merchantOrderId":"$merchantOrderId"'
-        '}';
-  }
+  Map<String, Object?> toMap() => {
+        'status': status,
+        'message': message,
+        'errors': errors,
+        'errorCode': errorCode,
+        'merchantOrderId': merchantOrderId,
+      };
+
+  /// Valid JSON: every value is escaped by `jsonEncode`; a missing value is `null`.
+  String toJson() => jsonEncode(toMap());
 
   @override
   String toString() => 'PaymentError(${toJson()})';

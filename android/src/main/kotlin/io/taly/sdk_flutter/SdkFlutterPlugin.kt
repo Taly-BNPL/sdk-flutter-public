@@ -339,7 +339,8 @@ class SdkFlutterPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
             "debug" -> LogLevel.DEBUG
             "info" -> LogLevel.INFO
             "error" -> LogLevel.ERROR
-            "warning" -> LogLevel.SUPRESS
+            // The native SDK has no WARN level: keep errors visible instead of silencing everything.
+            "warning" -> LogLevel.ERROR
             "none"    -> LogLevel.SUPRESS
             else -> LogLevel.DEBUG
         }

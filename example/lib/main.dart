@@ -25,6 +25,7 @@
 // =============================================================================
 
 import 'dart:developer';
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 
 // Single barrel import: exposes TalyFlutterSdk, TalyBannerView, and every model
@@ -38,7 +39,7 @@ void main() async {
 
   // == SDK STEP 1 · Initialize ================================================
   // Call once, before runApp(), and await it. It authenticates your merchant
-  // credentials with Taly, turns on logging, and opens the native -> Dart
+  // credentials with Taly and opens the native -> Dart
   // channel that later delivers payment results to the STEP 3 callbacks.
   await TalyFlutterSdk.initialize(
     userName: 'YOUR_USER_NAME', // your merchant username
@@ -52,7 +53,8 @@ void main() async {
   );
 
   // == SDK STEP 2 · Optional configuration ====================================
-  await TalyFlutterSdk.setLogLevel(LogLevel.verbose); // SDK log verbosity
+  // SDK log verbosity: detailed logs while developing, none in release builds.
+  await TalyFlutterSdk.setLogLevel(kDebugMode ? LogLevel.verbose : LogLevel.none);
   await TalyFlutterSdk.setLanguageCode('en'); // 'en' or 'ar'
 
   runApp(const MyApp());
@@ -114,20 +116,31 @@ class _MainScreenState extends State<MainScreen> {
     //   onPaymentError   -> PaymentError (network / auth / bad request) ·
     //                       .message, .errorCode, .errors, .toJson()
     // This is where a real app updates its order state / shows a receipt.
+    // Never log the full result: it holds the order token, plan and amounts.
+    // Log only ids and status, and only in debug builds.
     TalyFlutterSdk.onPaymentSuccess = (result) {
-      log('onPaymentSuccess: $result', name: 'talySDK');
+      if (kDebugMode) {
+        log('onPaymentSuccess: talyOrderId=${result.talyOrderId} status=${result.status}',
+            name: 'talySDK');
+      }
       _clearAll();
       _showPopup('Success', result.toJson());
     };
 
     TalyFlutterSdk.onPaymentFailure = (failure) {
-      log('onPaymentFailure: $failure', name: 'talySDK');
+      if (kDebugMode) {
+        log('onPaymentFailure: talyOrderId=${failure.talyOrderId} status=${failure.status}',
+            name: 'talySDK');
+      }
       _clearAll();
       _showPopup('Failure', failure.toJson());
     };
 
     TalyFlutterSdk.onPaymentError = (error) {
-      log('onPaymentError: $error', name: 'talySDK');
+      if (kDebugMode) {
+        log('onPaymentError: errorCode=${error.errorCode} status=${error.status}',
+            name: 'talySDK');
+      }
       _clearAll();
       _showPopup('Error', error.toJson());
     };
