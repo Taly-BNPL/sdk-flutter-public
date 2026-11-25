@@ -57,6 +57,9 @@ android {
 
     defaultConfig {
         minSdk = 26
+        // Ship the plugin's R8 rules to the app (Taly SDK keep rules, -dontwarn kotlinx.parcelize):
+        // without them minified release builds fail with "Missing class kotlinx.parcelize.Parcelize".
+        consumerProguardFiles("proguard-rules.pro")
     }
 
     testOptions {
@@ -79,10 +82,9 @@ android {
 dependencies {
     testImplementation("org.jetbrains.kotlin:kotlin-test")
     testImplementation("org.mockito:mockito-core:5.0.0")
-    implementation("io.taly:taly-sdk:1.0.4")
-
-    // MixPanel library
-    implementation("com.mixpanel.android:mixpanel-android:7.+")
+    // Taly Android SDK (native SDK v1.3), published in the local Maven repo (taly-repo) as 1.0.5.
+    // The artifact version intentionally differs from the native SDK version. Mixpanel is no longer required.
+    implementation("io.taly:taly-sdk:1.0.5")
 
     // Retrofit library
     implementation("com.squareup.retrofit2:retrofit:2.9.0")

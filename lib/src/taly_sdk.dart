@@ -47,12 +47,18 @@ class TalyFlutterSdk {
 
   /// [oauthScope] / [oauthGrantType] are used on **iOS** for [TokenRequest] (Taly docs: `scope: "api"`).
   /// Android ignores them; the native Android SDK sets OAuth internally.
+  ///
+  /// [clientId] / [clientSecret] are your own API client credentials from the Taly merchant
+  /// portal (API credentials page). They are **required on Android** (Taly Android SDK v1.3):
+  /// without them the Android SDK cannot sign in. iOS currently ignores them.
   static Future<void> initialize({
     required String userName,
     required String password,
     Environment environment = Environment.production,
     String oauthGrantType = 'password',
     String oauthScope = 'api',
+    String? clientId,
+    String? clientSecret,
   }) async {
     _environment = environment;
 
@@ -62,6 +68,8 @@ class TalyFlutterSdk {
       'environment': environment.value,
       'oauthGrantType': oauthGrantType,
       'oauthScope': oauthScope,
+      if (clientId != null) 'clientId': clientId,
+      if (clientSecret != null) 'clientSecret': clientSecret,
     });
 
     await setLogLevel(LogLevel.verbose);

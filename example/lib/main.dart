@@ -21,7 +21,7 @@
 //   * iOS:     ios/Podfile -> platform :ios, '13.0'   then `pod install`
 //   * Android: app build.gradle -> minSdk 21+   (INTERNET permission + payment
 //              activities are merged in from the plugin's own manifest)
-//   * Native binaries must ship in the plugin: taly-sdk-1.0.1.aar + TalySdk.xcframework
+//   * Native binaries must ship in the plugin: taly-sdk-1.0.5.aar + TalySdk.xcframework
 // =============================================================================
 
 import 'dart:developer';
@@ -45,6 +45,10 @@ void main() async {
     password: 'YOUR_PASSWORD', // your merchant PASSWORD
     environment: Environment
         .development, // sandbox; use Environment.production when live
+    // Android (Taly Android SDK v1.3): your own API client from the Taly merchant
+    // portal, API credentials page. Required on Android; ignored on iOS for now.
+    clientId: 'YOUR_CLIENT_ID',
+    clientSecret: 'YOUR_CLIENT_SECRET',
   );
 
   // == SDK STEP 2 · Optional configuration ====================================

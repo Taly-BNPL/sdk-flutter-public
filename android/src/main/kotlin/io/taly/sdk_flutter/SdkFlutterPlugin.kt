@@ -2,6 +2,7 @@ package io.taly.sdk_flutter
 
 import android.app.Activity
 import android.content.Context
+import android.util.Log
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
@@ -24,6 +25,17 @@ import java.util.Collections.emptyList
 import java.util.Collections.emptyMap
 
 class SdkFlutterPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
+
+    companion object {
+        private const val TAG = "TalyFlutter"
+
+        /** Both values present and non-blank, or null (then the legacy initialize is used). */
+        internal fun clientCredentialsOf(clientId: String?, clientSecret: String?): Pair<String, String>? {
+            val id = clientId?.trim().orEmpty()
+            val secret = clientSecret?.trim().orEmpty()
+            return if (id.isNotEmpty() && secret.isNotEmpty()) id to secret else null
+        }
+    }
 
     private lateinit var channel: MethodChannel
     private lateinit var context: Context
@@ -75,9 +87,29 @@ class SdkFlutterPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
             ?: return result.error("MISSING_PARAM", "password is required", null)
         val envStr = call.argument<String>("environment") ?: "production"
         val env = if (envStr == "development") Environment.Development else Environment.Production
+        val clientCredentials = clientCredentialsOf(
+            call.argument<String>("clientId"),
+            call.argument<String>("clientSecret")
+        )
 
         try {
-            TalySdk.initialize(context, userName, password, env)
+            if (clientCredentials != null) {
+                // Taly Android SDK v1.3: per-merchant API client.
+                TalySdk.initialize(
+                    context,
+                    clientCredentials.first,
+                    clientCredentials.second,
+                    userName,
+                    password,
+                    env
+                )
+            } else {
+                // No client credentials: keep the previous call so existing apps behave as before.
+                // With SDK v1.3 this cannot sign in (shared client removed), so warn the integrator.
+                Log.w(TAG, "clientId and clientSecret are required on Android with Taly SDK v1.3")
+                @Suppress("DEPRECATION")
+                TalySdk.initialize(context, userName, password, env)
+            }
             result.success(null)
         } catch (e: Exception) {
             result.error("INIT_ERROR", e.message, null)

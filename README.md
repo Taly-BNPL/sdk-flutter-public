@@ -69,6 +69,16 @@ android {
 }
 ```
 
+This plugin bundles the **Taly Android SDK v1.3**, packaged in the plugin as `io.taly:taly-sdk:1.0.5` (the plugin's artifact version intentionally differs from the native SDK version). On Android:
+
+* **Client credentials are required.** Pass `clientId` and `clientSecret` to `initialize()` (see [Initialize](#1-initialize-talyfluttersdk)). They are generated in the Taly merchant portal (**API credentials** page). Without them the Android SDK cannot sign in and every payment returns `onPaymentError`.
+* **Payment result confirmed by Taly's server.** `onPaymentSuccess` is called only when the Taly server reports the order as `CONFIRMED`; rejected, cancelled, incomplete or unconfirmed orders call `onPaymentFailure`.
+* **Production hardening.** With `Environment.production` the native checkout writes no logs, and screenshots / screen recording of the checkout screen are blocked.
+* **No analytics.** The native SDK no longer includes or needs Mixpanel.
+* Tested up to Android 16 (API 36): edge-to-edge, predictive back, light system bars with dark icons on the checkout.
+
+These changes apply to Android only; iOS behaviour is unchanged.
+
 ## Setup SDK
 
 ### Import the Package
@@ -92,6 +102,7 @@ Call `TalyFlutterSdk.initialize()` **once**, as early as possible — ideally be
 * **userName** — Your merchant username for authentication.
 * **password** — Your merchant password for authentication.
 * **environment** — `Environment.development` for testing, `Environment.production` for live.
+* **clientId** / **clientSecret** — Your own API client credentials from the Taly merchant portal (**API credentials** page). **Required on Android**; currently ignored on iOS. The secret is shown only once in the portal; if you lose it, rotate it there.
 
 ```dart
 import 'package:flutter/material.dart';
@@ -101,14 +112,18 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await TalyFlutterSdk.initialize(
-    userName:    'YOUR_USER_NAME',
-    password:    'YOUR_PASSWORD',
-    environment: Environment.development, // or Environment.production
+    userName:     'YOUR_USER_NAME',
+    password:     'YOUR_PASSWORD',
+    environment:  Environment.development, // or Environment.production
+    clientId:     'YOUR_CLIENT_ID',        // required on Android
+    clientSecret: 'YOUR_CLIENT_SECRET',    // required on Android
   );
 
   runApp(const MyApp());
 }
 ```
+
+> **Upgrading:** existing `initialize()` calls without `clientId` / `clientSecret` still compile, and iOS is unaffected. On Android the SDK then cannot sign in (the shared Taly API client was removed), so add both values before releasing. Do not log them or commit real values to a public repository.
 
 > **Note for iOS only:** The `oauthGrantType` and `oauthScope` parameters correspond to the iOS native `TokenRequest` (`grantType: "password"`, `scope: "api"`). Android sets OAuth internally and ignores these values. The defaults (`'password'` and `'api'`) match the Taly iOS SDK requirements and do not need to be changed under normal circumstances.
 
@@ -310,6 +325,8 @@ class TalyFlutterSdk { ... }
 | `onPaymentFailure` | `void Function(PaymentFailure)?` | Invoked when a payment fails (e.g. card declined, user cancelled).      |
 | `onPaymentError`   | `void Function(PaymentError)?`   | Invoked when an SDK or network error occurs during the payment process. |
 
+> **Android:** `onPaymentSuccess` fires only after the Taly server confirms the order (`CONFIRMED`); unconfirmed orders are reported through `onPaymentFailure`. On every platform, confirm the final status on your server through the `postBackUrl` webhook before fulfilling an order, and do not log the full callback objects (they contain order and customer details).
+
 #### Static Methods
 
 ##### `initialize()`
@@ -323,6 +340,8 @@ static Future<void> initialize({
   Environment environment = Environment.production,
   String oauthGrantType = 'password',
   String oauthScope = 'api',
+  String? clientId,
+  String? clientSecret,
 })
 ```
 
@@ -333,6 +352,8 @@ static Future<void> initialize({
 | `environment`    | `Environment` | ❌        | `Environment.production` | Target environment.                             |
 | `oauthGrantType` | `String`      | ❌        | `'password'`             | iOS only — OAuth grant type for `TokenRequest`. |
 | `oauthScope`     | `String`      | ❌        | `'api'`                  | iOS only — OAuth scope for `TokenRequest`.      |
+| `clientId`       | `String?`     | Android  | `null`                   | Android — your API client ID from the Taly merchant portal. Ignored on iOS. |
+| `clientSecret`   | `String?`     | Android  | `null`                   | Android — your API client secret from the Taly merchant portal. Ignored on iOS. |
 
 ***
 
